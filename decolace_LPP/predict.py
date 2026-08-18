@@ -116,10 +116,31 @@ def predict_fill6(ssx, ssy, neighbor_ss, neighbor_z):
     return float(coeff[0] * ssx + coeff[1] * ssy + coeff[2])
 
 
-def z_focus_from_probe(probe_nominal_defocus, measured_defocus_um, focus_base):
-    """delta_z such that SetDefocus(focus_base + delta_z + target) aims at target CTF."""
-    z_focus = float(probe_nominal_defocus) - float(measured_defocus_um)
-    return z_focus - float(focus_base)
+def z_focus_from_probe(
+    delta_z_used,
+    measured_defocus_um,
+    target_defocus,
+    ctf_probe_underfocus,
+):
+    """Specimen height residual in CTF microns, same frame as predict_delta_z.
+
+    Science is aimed at target_defocus. The probe is commanded a further
+    ctf_probe_underfocus um underfocus (ChangeFocus scaled by the defocus-error
+    slope), so the expected probe CTF at working X-tilt is
+        expected = target_defocus - ctf_probe_underfocus
+    (e.g. -0.02 - 1.0 = -1.02 um).
+
+    Do not mix SerialEM ReportDefocus with CtfFind. ReportDefocus after LAFIS
+    SetDefocus and slope-scaled ChangeFocus is not the same number as the
+    back-projected CTF, so probe_nominal - measured would walk the spline.
+
+    If the probe CTF is more underfocus than expected (measured more negative),
+    the next prediction must go more positive so science lands on target:
+        z_focus = delta_z_used - (measured - expected)
+    """
+    expected = float(target_defocus) - float(ctf_probe_underfocus)
+    error = float(measured_defocus_um) - expected
+    return float(delta_z_used) - error
 
 
 def predict_delta_z(holes, neighbors, idx, geometry, mode):

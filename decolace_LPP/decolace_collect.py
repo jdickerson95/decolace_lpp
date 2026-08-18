@@ -125,6 +125,27 @@ def state_path(out_dir):
     return os.path.join(out_dir, f"{stem}_state.json")
 
 
+def _json_safe(obj):
+    """json.dump cannot serialize numpy scalars or NaN/Inf."""
+    if isinstance(obj, dict):
+        return {str(k): _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, np.generic):
+        obj = obj.item()
+    if isinstance(obj, float) and not np.isfinite(obj):
+        return None
+    return obj
+
+
+def _finite_or_none(value):
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    return v if np.isfinite(v) else None
+
+
 def save_state(out_dir, area, extra=None):
     payload = dict(area)
     if extra:
@@ -132,7 +153,7 @@ def save_state(out_dir, area, extra=None):
     payload["updated"] = datetime.now().isoformat(timespec="seconds")
     path = state_path(out_dir)
     with open(path, "w") as fh:
-        json.dump(payload, fh, indent=2)
+        json.dump(_json_safe(payload), fh, indent=2)
     return path
 
 
@@ -330,11 +351,11 @@ def main():
         measured = ctf.get("defocus_um", float("nan"))
         if np.isfinite(measured):
             hole["z_focus"] = dpred.z_focus_from_probe(
-                result["probe_nominal_defocus"], measured, focus_base
+                delta_z, measured, science_target, ctf_probe_underfocus
             )
-            hole["defocus_um"] = float(measured)
-            hole["astig_x_um"] = ctf.get("astig_x_um")
-            hole["astig_y_um"] = ctf.get("astig_y_um")
+            hole["defocus_um"] = _finite_or_none(measured)
+            hole["astig_x_um"] = _finite_or_none(ctf.get("astig_x_um"))
+            hole["astig_y_um"] = _finite_or_none(ctf.get("astig_y_um"))
             live = dpred.geometry_from_holes(
                 holes,
                 extra_ss=extra_ss,

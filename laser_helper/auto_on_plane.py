@@ -3,7 +3,7 @@
 # ScriptName     auto_on_plane
 # Purpose:       Sweep C3 (ImageDistanceOffset), measure ronchi fringe
 #                spacing, fit the in-plane C3, then report ronchiCorrectKs
-#                at plane + working_offset.
+#                at plane + working_offset (default −20, same as collect).
 # ===================================================================
 import sys
 sys.path.append(r"C:\Program Files\SerialEM\PythonModules")
@@ -35,7 +35,8 @@ step = 5.0
 max_offset = 50.0
 
 # After the fit, measure ks at C3_plane + working_offset. That ks is ronchiCorrectKs.
-working_offset = 20.0
+# Must match collect/PACEtomo ronchiC3Offset (Trial is at plane −20).
+working_offset = -20.0
 
 # Trial / FFT (must match collect/PACEtomo ronchi settings).
 ronchiDelay = 1.0

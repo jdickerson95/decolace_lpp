@@ -46,12 +46,12 @@ Use the two scripts in [`laser_helper/`](../../laser_helper/README.md). Run them
 
 Run [`laser_helper/auto_on_plane.py`](../../laser_helper/auto_on_plane.py) starting **roughly on plane**.
 
-It sweeps C3 (`ImageDistanceOffset`) from +20 to +50 and −20 to −50, measures fringe-spacing magnitude, signs the negative branch, and fits the C3 where spacing is 0. Then it goes to that C3 **+20** and prints `ronchiCorrectKs`.
+It sweeps C3 (`ImageDistanceOffset`) from +20 to +50 and −20 to −50, measures fringe-spacing magnitude, signs the negative branch, and fits the C3 where spacing is 0. Then it goes to that C3 **−20** and prints `ronchiCorrectKs`.
 
 Copy from the log into `decolace_collect.py` and `PACEtomo.py`:
 
 - `ronchiCorrectKs = [[...], [...]]`
-- `ronchiC3Offset = 20`
+- `ronchiC3Offset = -20`
 
 Set the session `ImageDistanceOffset` to the reported in-plane C3.
 
@@ -59,7 +59,7 @@ Set the session `ImageDistanceOffset` to the reported in-plane C3.
 
 `auto_on_peak.py` needs the X-tilt change that moves the ronchigram by **one fringe** along X and along Y. You type those into `fringe_xtilt_x` and `fringe_xtilt_y`.
 
-With C3 on plane and a Trial at +20: change only X-tilt X until the pattern repeats (one period); that delta is `fringe_xtilt_x`. Restore X, repeat for Y. One fringe is also a 2π wrap of that fringe’s FFT phase.
+With C3 on plane and a Trial at −20: change only X-tilt X until the pattern repeats (one period); that delta is `fringe_xtilt_x`. Restore X, repeat for Y. One fringe is also a 2π wrap of that fringe’s FFT phase.
 
 Full steps: [`laser_helper/README.md`](../../laser_helper/README.md).
 
@@ -67,7 +67,7 @@ Full steps: [`laser_helper/README.md`](../../laser_helper/README.md).
 
 Run [`laser_helper/auto_on_peak.py`](../../laser_helper/auto_on_peak.py) from the **working** (laser) X-tilt.
 
-It measures defocus at `ctfXtilt` (off the laser), back-projects to the starting X-tilt if you set `xtilt_calibration_file`, then does a 5×5 X-tilt grid spanning one fringe. At each point CtfFind is run with min=max=that defocus so only phase is fitted. A quadratic fit gives the X-tilt of **maximum** phase. A +20 Trial there prints the target phases.
+It measures defocus at `ctfXtilt` (off the laser), back-projects to the starting X-tilt if you set `xtilt_calibration_file`, then does a 5×5 X-tilt grid spanning one fringe. At each point CtfFind is run with min=max=that defocus so only phase is fitted. A quadratic fit gives the X-tilt of **maximum** phase. A −20 Trial there prints the target phases.
 
 Copy from the log into the same two files:
 

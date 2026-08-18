@@ -15,14 +15,14 @@ Start **roughly on plane**. The script:
 3. Repeats the same sweep in the negative direction.
 4. Takes the magnitude of each fringe spacing, then assigns a negative sign to the negative-C3 branch.
 5. Fits a line and reports the C3 where signed spacing is 0 (in plane).
-6. Goes to that C3 **+20**, measures `ks`, and prints `ronchiCorrectKs` to copy.
+6. Goes to that C3 **−20**, measures `ks`, and prints `ronchiCorrectKs` to copy.
 
 ### Where to paste
 
 From the SerialEM log:
 
 - `ronchiCorrectKs = [[...], [...]]`
-- `ronchiC3Offset = 20`
+- `ronchiC3Offset = -20`
 
 into **both** [`decolace_LPP/decolace_collect.py`](../decolace_LPP/decolace_collect.py) and [`PACEtomo.py`](../PACEtomo.py) (`########## Ronchigram / laser alignment ##########`).
 
@@ -34,9 +34,9 @@ Writes `auto_on_plane_measurements.csv` and `auto_on_plane_fit.png`.
 
 `auto_on_peak.py` does **not** guess the X-tilt period. You type `fringe_xtilt_x` and `fringe_xtilt_y`: the XLensDeflector change that shifts the ronchigram by **one fringe** (one full period) along X and along Y.
 
-Do this after `auto_on_plane.py`, with C3 on plane and a Trial at **+20**:
+Do this after `auto_on_plane.py`, with C3 on plane and a Trial at **−20**:
 
-1. `GoToLowDoseArea T`, `SetImageDistanceOffset` to plane+20, take a Trial. You should see a clear two-direction fringe pattern (or two FFT spots).
+1. `GoToLowDoseArea T`, `SetImageDistanceOffset` to plane−20, take a Trial. You should see a clear two-direction fringe pattern (or two FFT spots).
 2. Note the current X-tilt (`ReportXLensDeflector 2`) and the look of the pattern (or the FFT peak phases in the log if you already ran a ronchi analyze).
 3. Change **only X-tilt X** in small steps. Watch one set of fringes walk across the field. Stop when the pattern looks the same as the start — that is one period.  
    `fringe_xtilt_x = (X after) − (X before)`.
@@ -62,7 +62,7 @@ Start at the **working** (laser) X-tilt, C3 on plane.
 4. 5×5 X-tilt grid centered on start, spanning **one fringe** in X and in Y (`±0.5 * fringe_xtilt_*`).
 5. At each point: Record, CtfFind with min=max=saved defocus and a phase search (`phase_search_lo` to `phase_search_hi`, range less than 90 deg). Only phase is fitted.
 6. Fits a quadratic to phase vs X-tilt and takes the **maximum**. If that peak is not a maximum inside the grid, uses the discrete grid max instead.
-7. Sets that X-tilt, takes a Trial at C3 **+20**, and prints `ronchiTargetPhaseA` / `ronchiTargetPhaseB`.
+7. Sets that X-tilt, takes a Trial at C3 **−20**, and prints `ronchiTargetPhaseA` / `ronchiTargetPhaseB`.
 
 Restores starting C3 and X-tilt at the end.
 

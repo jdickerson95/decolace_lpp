@@ -3,7 +3,7 @@
 # ScriptName     auto_on_peak
 # Purpose:       Measure working-xtilt defocus at CTF X-tilt, then
 #                5x5 X-tilt grid within 1 fringe (phase-only CtfFind),
-#                fit the maximum-phase X-tilt, and take a +20
+#                fit the maximum-phase X-tilt, and take a plane-20
 #                ronchigram for ronchiTargetPhaseA / B.
 # ===================================================================
 import sys
@@ -54,7 +54,8 @@ phase_search_lo = 0.0
 phase_search_hi = 80.0
 
 # After the peak fit, Trial ronchigram at C3 = current + working_offset.
-working_offset = 20.0
+# Must match collect/PACEtomo ronchiC3Offset (Trial is at plane −20).
+working_offset = -20.0
 ronchiDelay = 1.0
 ronchiBinning = 32
 ronchiPixelSize = 0.98e-4 * 2

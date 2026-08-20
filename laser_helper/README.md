@@ -1,10 +1,27 @@
 # laser_helper
 
-SerialEM scripts for the session ronchi numbers you paste into collect: in-plane C3, `ronchiCorrectKs`, and `ronchiTargetPhaseA` / `B`.
+SerialEM scripts for the session ronchi numbers you paste into collect: round C2 (equal x/y fringe spacing), in-plane C3, `ronchiCorrectKs`, and `ronchiTargetPhaseA` / `B`.
 
-Run **after** the CTF calibrations (`calibrate_defocus_error`, `check_xtilt_defoc_astig`). Trial must match Record (same beam position). Copy `ronchiPixelSize` / `ronchiBinning` / `ronchiPeakRadius` and `ctfXtiltX` / `ctfXtiltY` from [`decolace_LPP/decolace_collect.py`](../decolace_LPP/decolace_collect.py) if you changed them.
+Run **after** the CTF calibrations (`calibrate_defocus_error`, `check_xtilt_defoc_astig`) and the C2 map (`calibrate_C2_astig`). Trial must match Record (same beam position). Copy `ronchiPixelSize` / `ronchiBinning` / `ronchiPeakRadius` and `ctfXtiltX` / `ctfXtiltY` from [`decolace_LPP/decolace_collect.py`](../decolace_LPP/decolace_collect.py) if you changed them.
 
-Order: **on plane, then on peak.**
+Order: **C2 stig, on plane, then on peak.**
+
+## `auto_c2_stig.py`
+
+Requires the JSON from [`calibrations/calibrate_C2_astig.py`](../calibrations/calibrate_C2_astig.py). Paste its path into `c2_astig_calibration_file` before running.
+
+Start **roughly on plane**. The script:
+
+1. Takes a Trial at C3 **−20** and measures fringe spacing in x and y (`ks_x`, `ks_y`: magnitudes of the two FFT peaks, 1/µm).
+2. If `|ks_x − ks_y|` is already ≤ `tolerance` (default 0.05), it stops.
+3. Otherwise it applies `dC2 = inv(M) @ ([mean, mean] − [ks_x, ks_y])` so the two spacings match while keeping the mean.
+4. Remeasures and can repeat up to `max_iterations` (default 2).
+
+Restores starting C3 at the end. **Leaves C2 at the corrected value.**
+
+Writes `auto_c2_stig.json`.
+
+Run this **before** `auto_on_plane.py`. How to get the JSON: [`decolace_LPP/docs/02_calibrations.md`](../decolace_LPP/docs/02_calibrations.md) section on `calibrate_C2_astig.py`.
 
 ## `auto_on_plane.py`
 
@@ -16,6 +33,7 @@ Start **roughly on plane**. The script:
 4. Takes the magnitude of each fringe spacing, then assigns a negative sign to the negative-C3 branch.
 5. Fits a line and reports the C3 where signed spacing is 0 (in plane).
 6. Goes to that C3 **−20**, measures `ks`, and prints `ronchiCorrectKs` to copy.
+7. Sets `ImageDistanceOffset` to the in-plane C3 and **leaves you there**.
 
 ### Where to paste
 
@@ -26,7 +44,7 @@ From the SerialEM log:
 
 into **both** [`decolace_LPP/decolace_collect.py`](../decolace_LPP/decolace_collect.py) and [`PACEtomo.py`](../PACEtomo.py) (`########## Ronchigram / laser alignment ##########`).
 
-Set the session `ImageDistanceOffset` to the reported in-plane C3. Collect then adds `ronchiC3Offset` only for the Trial shot.
+Collect then adds `ronchiC3Offset` only for the Trial shot. The session C3 baseline is already the in-plane value the script left.
 
 Writes `auto_on_plane_measurements.csv` and `auto_on_plane_fit.png`.
 

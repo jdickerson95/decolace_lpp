@@ -1,6 +1,6 @@
 # Calibration scripts: what they write and where to paste it
 
-Run these from SerialEM like any other script. Each writes a **JSON** (the calibration), plus a CSV and a PNG plot. The JSON is what decolace and PACEtomo actually read.
+Run these from SerialEM like any other script. Each writes a **JSON** (the calibration), plus a CSV and a PNG plot. The JSON is what the consumer script actually reads (decolace, PACEtomo, or `auto_c2_stig`).
 
 **You must copy the JSON path into the consumer script.** Nothing is applied automatically.
 
@@ -11,6 +11,7 @@ Run these from SerialEM like any other script. Each writes a **JSON** (the calib
 | `calibrations/calibrate_defocus_error.py` | `defocus_error_calibration.json` | `decolace_collect.py` → `defocus_error_file`<br>`PACEtomo.py` → `defocus_error_file`<br>`PACEtomo_measureGeometry.py` → `defocus_error_file` |
 | `calibrations/check_xtilt_defoc_astig.py` | `xtilt_defoc_astig_calibration.json` | `decolace_collect.py` → `xtilt_calibration_file`<br>`PACEtomo.py` → `xtilt_calibration_file`<br>`calibrate_astigmatism.py` → `xtilt_calibration_file`<br>`PACEtomo_measureGeometry.py` → `xtilt_calibration_file` |
 | `calibrations/calibrate_astigmatism.py` | `astigmatism_calibration.json` | `decolace_collect.py` → `astig_calibration_file`<br>`calibrations/correct_astigmatism.py` → `astig_calibration_file` |
+| `calibrations/calibrate_C2_astig.py` | `c2_astig_calibration.json` | `laser_helper/auto_c2_stig.py` → `c2_astig_calibration_file` |
 | `PACEtomo_measureGeometry.py` | `geometry.json` | `decolace_collect.py` → `geometry_file`<br>`PACEtomo.py` → `geometry_file` (and `geometryMode = "spline"`) |
 
 Example in `decolace_LPP/decolace_collect.py`:
@@ -80,7 +81,25 @@ Set `save_dir` to a calibrations folder you will keep, e.g. `r"Z:\cals"`. The lo
 
 Optional one-shot test: `calibrations/correct_astigmatism.py` with the same two JSON paths.
 
-## 4. Beam-tilt scripts (optional for decolace)
+## 4. `calibrate_C2_astig.py`
+
+**What it does:** C2 (condenser) stigmator grid, Trial ronchigram at plane−20 at each point, measure fringe spacing in x and y (`|k|` of the two FFT peaks, 1/µm). Fits `[ks_x, ks_y] = M @ dC2 + b`.
+
+**Why you need it:** C2 astigmatism makes the two ronchi fringe spacings unequal. `laser_helper/auto_c2_stig.py` uses this JSON to move C2 so `ks_x ≈ ks_y` (mean spacing is kept). That should be done **before** `auto_on_plane.py`, so `ronchiCorrectKs` is measured on a round probe.
+
+This JSON is **not** pasted into `decolace_collect.py`. Collect does not move C2.
+
+**How to run:**
+
+1. Trial matched to Record, C3 **roughly on plane**, clear two-direction fringes at −20.
+2. Match `ronchiPixelSize` / `ronchiBinning` / `ronchiPeakRadius` / `working_offset` to decolace/PACEtomo.
+3. Set `save_dir`, run. C2 stigmator and C3 are restored at the end.
+4. Check `c2_astig_fit.png` / that `inv_M` exists in the JSON. If the matrix is singular, increase `stig_step`.
+5. Paste `c2_astig_calibration.json` into `laser_helper/auto_c2_stig.py` → `c2_astig_calibration_file`.
+
+Then each session, run [`auto_c2_stig.py`](../../laser_helper/auto_c2_stig.py) before on-plane. Details: [03_ronchi.md](03_ronchi.md).
+
+## 5. Beam-tilt scripts (optional for decolace)
 
 These feed **PACEtomo autofocus**, not the decolace two-shot CTF loop. Run them if you also collect tilt series.
 

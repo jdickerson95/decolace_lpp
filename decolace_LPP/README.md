@@ -15,16 +15,17 @@ This README is the map. Step-by-step for each program is under [`docs/`](docs/).
 
 ## What to do with calibration results (short)
 
-Each calibration script writes a JSON (plus CSV/PNG). **Paste the full JSON path into `decolace_LPP/decolace_collect.py`:**
+Each calibration script writes a JSON (plus CSV/PNG). **Paste the full JSON path into the consumer:**
 
-| JSON from | Setting in `decolace_collect.py` |
+| JSON from | Setting |
 | --- | --- |
-| `calibrations/calibrate_defocus_error.py` → `defocus_error_calibration.json` | `defocus_error_file = r"..."` |
-| `calibrations/check_xtilt_defoc_astig.py` → `xtilt_defoc_astig_calibration.json` | `xtilt_calibration_file = r"..."` |
-| `calibrations/calibrate_astigmatism.py` → `astigmatism_calibration.json` | `astig_calibration_file = r"..."` |
-| `PACEtomo_measureGeometry.py` → `geometry.json` | `geometry_file = r"..."` |
+| `calibrations/calibrate_defocus_error.py` → `defocus_error_calibration.json` | `decolace_collect.py` → `defocus_error_file = r"..."` |
+| `calibrations/check_xtilt_defoc_astig.py` → `xtilt_defoc_astig_calibration.json` | `decolace_collect.py` → `xtilt_calibration_file = r"..."` |
+| `calibrations/calibrate_astigmatism.py` → `astigmatism_calibration.json` | `decolace_collect.py` → `astig_calibration_file = r"..."` |
+| `calibrations/calibrate_C2_astig.py` → `c2_astig_calibration.json` | `laser_helper/auto_c2_stig.py` → `c2_astig_calibration_file = r"..."` |
+| `PACEtomo_measureGeometry.py` → `geometry.json` | `decolace_collect.py` → `geometry_file = r"..."` |
 
-Empty `r""` skips that file. `correctAstig = True` needs the xtilt JSON **and** the astig JSON.
+Empty `r""` skips that file. `correctAstig = True` needs the xtilt JSON **and** the astig JSON. Collect does not read the C2 JSON.
 
 Use the same `ctfXtiltX` / `ctfXtiltY` in decolace and in every calibration that takes a CTF off the laser.
 
@@ -40,7 +41,7 @@ If you also run tilt series, copy the **same three values** into [`PACEtomo.py`]
 
 `PACEtomo_ronchi.py` is only fallback defaults; the collect/PACEtomo settings overwrite them at run time.
 
-How to measure new values: run [`laser_helper/auto_on_plane.py`](../laser_helper/auto_on_plane.py) then [`laser_helper/auto_on_peak.py`](../laser_helper/auto_on_peak.py). Steps: [docs/03_ronchi.md](docs/03_ronchi.md) and [`laser_helper/README.md`](../laser_helper/README.md).
+How to measure new values: run [`laser_helper/auto_c2_stig.py`](../laser_helper/auto_c2_stig.py) (needs [`calibrations/calibrate_C2_astig.py`](../calibrations/calibrate_C2_astig.py) JSON), then [`laser_helper/auto_on_plane.py`](../laser_helper/auto_on_plane.py), then [`laser_helper/auto_on_peak.py`](../laser_helper/auto_on_peak.py). Steps: [docs/03_ronchi.md](docs/03_ronchi.md) and [`laser_helper/README.md`](../laser_helper/README.md).
 
 ## Code map
 

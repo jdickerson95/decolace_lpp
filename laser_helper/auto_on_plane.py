@@ -2,8 +2,9 @@
 # ===================================================================
 # ScriptName     auto_on_plane
 # Purpose:       Sweep C3 (ImageDistanceOffset), measure ronchi fringe
-#                spacing, fit the in-plane C3, then report ronchiCorrectKs
-#                at plane + working_offset (default −20, same as collect).
+#                spacing, fit the in-plane C3, measure ronchiCorrectKs at
+#                plane + working_offset (default −20, same as collect),
+#                then leave ImageDistanceOffset at the in-plane C3.
 # ===================================================================
 import sys
 sys.path.append(r"C:\Program Files\SerialEM\PythonModules")
@@ -233,7 +234,7 @@ def main():
         echo("COPY INTO decolace_collect.py AND PACEtomo.py:")
         echo(f"  ronchiCorrectKs = {format_ks(verify_ks)}")
         echo(f"  ronchiC3Offset = {working_offset:g}")
-        echo(f"Set session ImageDistanceOffset (C3 baseline) to {c3_plane:.6f}")
+        echo(f"Leaving ImageDistanceOffset at on-plane C3 {c3_plane:.6f}")
         echo("================================================")
 
         with open(csv_measurements, "w", newline="") as fh:
@@ -246,8 +247,12 @@ def main():
         echo(f"Saved plot: {plot_file}")
 
     finally:
-        sem.SetImageDistanceOffset(start_c3)
-        echo(f"Restored ImageDistanceOffset to {start_c3:.6f}")
+        leave_c3 = c3_plane if np.isfinite(c3_plane) else start_c3
+        sem.SetImageDistanceOffset(leave_c3)
+        if np.isfinite(c3_plane):
+            echo(f"Left ImageDistanceOffset at on-plane C3 {leave_c3:.6f}")
+        else:
+            echo(f"Fit did not yield a plane; restored ImageDistanceOffset to {leave_c3:.6f}")
 
     sem.SuppressReports(0)
     sem.Exit()

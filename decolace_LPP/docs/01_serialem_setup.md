@@ -27,8 +27,8 @@ Empty `r""` means “skip this file / use SerialEM’s current directory”.
 Do these in order (details in the other docs):
 
 1. SerialEM low-dose (Record + Trial matched) — [03_ronchi.md](03_ronchi.md)
-2. Calibrations — [02_calibrations.md](02_calibrations.md)
-3. Laser on-plane then on-peak (`laser_helper/`) — [03_ronchi.md](03_ronchi.md)
+2. Calibrations (including C2 stig) — [02_calibrations.md](02_calibrations.md)
+3. Laser: auto C2 stig, then on-plane, then on-peak (`laser_helper/`) — [03_ronchi.md](03_ronchi.md)
 4. Optional geometry map — [04_geometry.md](04_geometry.md)
 5. Navigator polygon + decolace collect — [05_area_and_collect.md](05_area_and_collect.md)
 

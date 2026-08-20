@@ -40,20 +40,30 @@ If Trial is not at the Record beam position, the laser correction is applied at 
 
 ## How to get `correctKs` and target phases
 
-Use the two scripts in [`laser_helper/`](../../laser_helper/README.md). Run them **after** the CTF calibrations ([02_calibrations.md](02_calibrations.md)), with Trial matched to Record.
+Use the scripts in [`laser_helper/`](../../laser_helper/README.md). Run them **after** the CTF calibrations ([02_calibrations.md](02_calibrations.md)), with Trial matched to Record.
+
+Order: **C2 stig, on plane, then on peak.**
+
+### 0. C2 stig → equal x/y fringe spacing
+
+C2 (condenser) astigmatism makes the two ronchi fringe spacings different. Equalize them before measuring `ronchiCorrectKs`.
+
+Once per setup (or when C2 coupling changes), run [`calibrations/calibrate_C2_astig.py`](../../calibrations/calibrate_C2_astig.py) starting **roughly on plane**. It grids the condenser stigmator, takes a Trial at −20 at each point, measures `ks_x` / `ks_y` (the two FFT-peak magnitudes in 1/µm), and writes `c2_astig_calibration.json`. Paste that path into [`laser_helper/auto_c2_stig.py`](../../laser_helper/auto_c2_stig.py) → `c2_astig_calibration_file`.
+
+Each session, still roughly on plane, run [`laser_helper/auto_c2_stig.py`](../../laser_helper/auto_c2_stig.py). It measures one ronchigram, then moves C2 so `ks_x ≈ ks_y` (mean spacing unchanged). C3 is restored; **C2 is left at the corrected value**.
+
+If `|ks_x − ks_y|` is already below `tolerance` (default 0.05 1/µm), it does not move C2.
 
 ### 1. On plane → `ronchiCorrectKs`
 
 Run [`laser_helper/auto_on_plane.py`](../../laser_helper/auto_on_plane.py) starting **roughly on plane**.
 
-It sweeps C3 (`ImageDistanceOffset`) from +20 to +50 and −20 to −50, measures fringe-spacing magnitude, signs the negative branch, and fits the C3 where spacing is 0. Then it goes to that C3 **−20** and prints `ronchiCorrectKs`.
+It sweeps C3 (`ImageDistanceOffset`) from +20 to +50 and −20 to −50, measures fringe-spacing magnitude, signs the negative branch, and fits the C3 where spacing is 0. Then it goes to that C3 **−20**, prints `ronchiCorrectKs`, and **leaves `ImageDistanceOffset` at the in-plane C3**.
 
 Copy from the log into `decolace_collect.py` and `PACEtomo.py`:
 
 - `ronchiCorrectKs = [[...], [...]]`
 - `ronchiC3Offset = -20`
-
-Set the session `ImageDistanceOffset` to the reported in-plane C3.
 
 ### 2. One-fringe X-tilt (manual)
 
